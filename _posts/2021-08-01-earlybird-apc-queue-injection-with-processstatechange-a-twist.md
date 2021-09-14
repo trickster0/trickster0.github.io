@@ -21,14 +21,10 @@ Obviously the below code will be detected due to the shellcode, VirtualAlloc, Wr
 
 PoC:
 
-wp:image {"id":342,"sizeSlug":"large","linkDestination":"media"}
-
 [![](https://trickster0.files.wordpress.com/2021/08/poc.png?w=1024)](https://trickster0.files.wordpress.com/2021/08/poc.png)
 
-/wp:image
-
-
-wp:code
+<pre>
+  <code class="C">
 
 #include <Windows.h>
 #include <stdio.h>
@@ -68,8 +64,8 @@ void main()
     status = pNtChangeProcessState(stateChangeHandle, procInfo.hProcess, 1, NULL, 0, 0);
 }
 
-/wp:code
-
+  </code>
+</pre>
 
 Sources:
 
