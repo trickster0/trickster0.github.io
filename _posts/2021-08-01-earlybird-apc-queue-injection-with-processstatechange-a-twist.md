@@ -25,7 +25,6 @@ PoC:
 
 <pre>
   <code class="C">
-
 #include <Windows.h>
 #include <stdio.h>
 #include <winternl.h>
@@ -63,7 +62,6 @@ void main()
     QueueUserAPC((PAPCFUNC)apcRoutine, threadHandle, NULL);
     status = pNtChangeProcessState(stateChangeHandle, procInfo.hProcess, 1, NULL, 0, 0);
 }
-
   </code>
 </pre>
 
