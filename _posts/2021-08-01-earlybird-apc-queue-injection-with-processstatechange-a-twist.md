@@ -25,9 +25,9 @@ PoC:
 
 <pre>
   <code class="C">
-#include <Windows.h>
-#include <stdio.h>
-#include <winternl.h>
+#include &lt;Windows.h>
+#include &lt;stdio.h>
+#include &lt;winternl.h>
 
 typedef NTSTATUS(__fastcall* NtCreateProcessStateChange)(OUT PHANDLE StateChangeHandle, IN ACCESS_MASK DesiredAccess, IN POBJECT_ATTRIBUTES ObjectAttributes, IN HANDLE ProcessHandle, IN INT Unknown);
 typedef NTSTATUS(__fastcall* NtChangeProcessState)(IN HANDLE StateChangeHandle, IN HANDLE ProcessHandle, IN ULONG Action, IN ULONG64 Unknown1, IN ULONG64 Unknown2, IN ULONG64 Unknown3);
