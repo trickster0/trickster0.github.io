@@ -4,59 +4,22 @@ title: EarlyBird APC Queue Injection With a ProcessStateChange Twist
 tags: []
 ---
 
-wp:paragraph
 
-/wp:paragraph
-
-
-wp:paragraph
 
 Relatively recently, Yarden Shafir made a blog post about a new way to evade the EDRs for process injection. In the blog post, Yarden mentions that there are new added features in the recent Windows 10 build(Insider) and Windows 11 as well. Some of them are NtCreateProcessStateChange/ NtCreateThreadStateChange and NtChangeProcessState/NtChangeThreadState.
 
-/wp:paragraph
-
-
-wp:paragraph
-
 These WINAPI calls were added to resolve the issue of what happens if a process suspends a thread and then terminates it before resuming it. To quote Yarden:
-
-/wp:paragraph
-
-
-wp:paragraph
 
 Unless some other part of the system realizes what happened, the thread will remain suspended forever and will never resume its execution. To solve that, this new feature allows suspending and resuming threads and processes through the new object types, which will keep track of the suspension state of the threads or processes. That way, when the object is destroyed (for example, when the process that created it is terminated), the system will reset the state of the target process or thread by suspending or resuming it as needed.
 
-/wp:paragraph
-
-
-wp:paragraph
-
 Yarden has made a PoC at the bottom of the blog potentially continuing a suspended thread, due to these aforementioned new WINAPI calls, a suspended application can now resume or reset. By using DuplicateHandle and getting the second notepad a handle to the first suspended notepad, the suspended notepad remains as is until the second notepad closes and resumes the first notepad without using ResumeThread.
 
-/wp:paragraph
-
-
-wp:paragraph
 
 Evading common process injection patterns for WINAPI calls can definitely trick some EDRs. Although I took a different approach in my PoC and followed the pattern of EarlyBird APC Queue Injection and instead of creating a suspended process, allocate shellcode and ResumeThread, I created a process, suspended it with NtCreateProcessStateChange, allocated the shellcode and then changed the suspended state back with NtChangeProcessState to continue the primary thread.
 
-/wp:paragraph
-
-
-wp:paragraph
-
 Obviously the below code will be detected due to the shellcode, VirtualAlloc, WriteProcessMemory, QueueUserAPC but SysWhispers can help you replace that will the ntdll's WINAPI calls for better results.
 
-/wp:paragraph
-
-
-wp:paragraph
-
 PoC:
-
-/wp:paragraph
-
 
 wp:image {"id":342,"sizeSlug":"large","linkDestination":"media"}
 
@@ -108,29 +71,14 @@ void main()
 /wp:code
 
 
-wp:paragraph
-
 Sources:
 
-/wp:paragraph
 
-
-wp:paragraph
 
 EarlyBird APC Queue Injection - https://www.ired.team/offensive-security/code-injection-process-injection/early-bird-apc-queue-code-injection
 
-/wp:paragraph
-
-
-wp:paragraph
 
 NtCreateProcessChangeState Blog Post - https://windows-internals.com/thread-and-process-state-change/
 
-/wp:paragraph
-
-
-wp:paragraph
 
 NtCreateProcessChangeState gist example - https://gist.github.com/DownWithUp/80a3b7b6a198788e79d8b508463e9384
-
-/wp:paragraph
