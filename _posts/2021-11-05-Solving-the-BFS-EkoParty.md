@@ -95,7 +95,7 @@ In this case, according to our possible instructions we chose:
 
 The first byte 47 and these as before are the last bytes of our payload:  
 
-“\![#f03c15](x47)\x65\x65\x65\x65\x65\x65\x65 + address+0x10”
+"\x47\x65\x65\x65\x65\x65\x65\x65 + address+0x10"
 
 As an end goal we need to create a ROP chain to execute calc.exe.  
 
