@@ -170,7 +170,8 @@ In windows 10 x64 , the calling convention is rcx,rdx,r8,r9 and top of the stack
 
 The structure of the packet is this. The whole packet is the cookie + 528 characters.  
 
-Structure:
+Structure:  
+
 | 16 junk bytes | padding  |
 |pop_rax_gadget| Pop Image Base Address for having a valid address on RAX because the only pop rdx and pop rdx gadgets set bad values to it. |
 |Image Base Address – 0x08| valid address |
@@ -194,7 +195,8 @@ Structure:
 |15 junk bytes| padding.|
 
 
-Gadgets Used:
+Gadgets Used:  
+
 | Gadget Address | Gadget |
 | ---  | --- |
 |0x14000158b| add rsp, 0x78 ; ret  ; |
