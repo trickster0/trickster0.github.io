@@ -63,7 +63,9 @@ The first thing I had to do was, get the process address from PEB.
 
 By sending in our payload these are the last bytes:  
 
-“\![#f03c15](x65)\x65\x65\x65\x65\x65\x65\x65\![#f03c15](x60)\x00\x00\x00\x00\x00\x00\x00”  
+"\`diff
+- x65`\x65\x65\x65\x65\x65\x65\x65\`diff 
+- x60`\x00\x00\x00\x00\x00\x00\x00"
 
 We could achieve and acquire the PEB. \x65 is meant for the combination from the previous instructions.  
 
