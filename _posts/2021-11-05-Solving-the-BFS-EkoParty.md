@@ -19,7 +19,7 @@ By opening the application we can see via netstat that it binds on port 54321 on
 By opening Ghidra and going to the main function it is obvious that some checks need to bypassed in order to correctly send a payload to the application.
 In Ghidra, if we check the function that is called after the new connection is accepted, we see this: 
 
-pic1 [![](https://trickster0.files.wordpress.com/2021/08/poc.png?w=1024)](https://trickster0.files.wordpress.com/2021/08/poc.png)
+[![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/1.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/1.png)
 
 
 Upon first check, it checks for the first 0x10 bytes(16 chars) as a header. 
@@ -31,7 +31,7 @@ Before this, there is this instruction
 `lea     rcx, unk_7FF6A8A9E520`  
  unk_7FF6A8A9E520, holds an array with this structure
 
-pic2 [![](https://trickster0.files.wordpress.com/2021/08/poc.png?w=1024)](https://trickster0.files.wordpress.com/2021/08/poc.png)
+[![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/2.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/2.png)
 
 By sending the 513 characters, for example as A or \x41 we can make it so the function will return our byte + the rest of the pattern. In this case c3c3c3c3 + ourbyte+488b01.
 The function sub_140001170 before it returns this value turns it to little endian, making it ourbyte+488b01c3c3c3c3. So we get 41488b01c3c3c3c3.
@@ -78,7 +78,7 @@ As an end goal we need to create a ROP chain to execute calc.exe.
 Since we would like to bypass ASLR, leakage is already useful but in case we would need to execute something, we would have to bypass DEP as well.
 In this case it is good that we have, in the beginning of the application, a winexec call.
 
-pic3 [![](https://trickster0.files.wordpress.com/2021/08/poc.png?w=1024)](https://trickster0.files.wordpress.com/2021/08/poc.png)
+[![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/3.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/3.png)
 
 Therefore, in the end we will call calc.exe through winexec but, winexec requires that the application will be executed to be pointed at, hence a pointer that points to the string calc.exe and a null terminator.
 Somehow I had to be able to find that place in memory with my string. The best way was to get the StackBase Limit and get towards the stack base to find where it is.
@@ -103,7 +103,7 @@ In the above scenario I used:
 With RCX as the Stack Base Limit and constantly adding 0x08 to it.
 The next step would be to get the winexec’s address on the stack. By checking the .rdata of the application I could see the offset of it.
 
-pic4 [![](https://trickster0.files.wordpress.com/2021/08/poc.png?w=1024)](https://trickster0.files.wordpress.com/2021/08/poc.png)
+pic4 [![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/4.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/4.png)
 
 In this case, I need to leak the address from Image Base Address + 0x9010 offset.
 By using exactly the same instructions as before:
@@ -170,9 +170,8 @@ Full Working exploit: https://github.com/trickster0/BFS-Ekoparty-2019-challenge
 
 Proof of Concept:
 
-pic4 [![](https://trickster0.files.wordpress.com/2021/08/poc.png?w=1024)](https://trickster0.files.wordpress.com/2021/08/poc.png)
+[![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/5.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/5.png)
 
 
 Results:
-
-pic5 [![](https://trickster0.files.wordpress.com/2021/08/poc.png?w=1024)](https://trickster0.files.wordpress.com/2021/08/poc.png)
+[![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/unknown.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/unknown.png)
