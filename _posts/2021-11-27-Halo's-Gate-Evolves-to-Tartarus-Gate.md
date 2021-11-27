@@ -42,6 +42,7 @@ I am certain there are more EDRs that have their own hooking method so I can see
 
 Source Code can be found [here](https://github.com/trickster0/TartarusGate)
 You will notice that the custom way to copy the shellcode to the allocated space is removed, for some reason it was not working very well against this EDR so I would avoid depending on the case.
+Also, this code might fail a few times depending on the EDR, so if it will not work on the first try, try a few times. If you use a different method that works better than CreateRemoteThread, it will work in a very stable manner.
 
 Resources:
 [https://sektor7.net/#!res/2021/halosgate.md](https://sektor7.net/#!res/2021/halosgate.md)
