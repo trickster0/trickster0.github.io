@@ -16,8 +16,7 @@ Unfortunately, in x64 bit the actual function looks like this:
 
 [![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/pre-mod.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/pre-mod.png)  
 
-We can see that there are 2 minor issues in the x64 bit version of this function, first one is that the argument of RtlFirstEntrySList will be +8,  
-`mov rax, qword ptr(rcx+8)`  
+We can see that there are 2 minor issues in the x64 bit version of this function, first one is that the argument of RtlFirstEntrySList will be +8, `mov rax, qword ptr(rcx+8)`  
 which is easy to solve by just adding -8 in the passed address argument. FYI, for my POC, I am just reading the address of RtlFirstEntrySList but using reference of its address.  
 You can alter it be removing the reference(&) to just read the contents of that address.  
 First issue bypassed! Second one is not possible to evade that easy since it will perform `and al, 0F0h` in the byte we want to fetch, hence losing the accuracy of the byte and obtaing a completely wrong address.  
