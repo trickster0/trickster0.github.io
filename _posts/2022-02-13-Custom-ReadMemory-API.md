@@ -30,5 +30,7 @@ Obviously the result will come back as little endian, but you can always allocat
 
 [![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/output-mod.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/output-mod.png)  
 
+POC: https://github.com/trickster0/CReadMemory  
+
 Make sure you read the blog posts and research of Matthew, there are some great stuff on his blog.  
 
