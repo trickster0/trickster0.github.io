@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Primitive Injection: Breaking the Status Quo
+title: Primitive Injection - Breaking the Status Quo
 tags: []
 ---
 
