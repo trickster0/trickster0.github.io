@@ -5,6 +5,7 @@ tags: []
 ---
 
 It has been a while, this is my research on trying to change the IOCs of a common remote process injection flow and the end result.  
+I presented this in RedTreat last years and I thought it was about time I publish it.  
 As you most likely know, in order to perform remote process injection a few things need to happen:  
 1) Open the remote process with PROCESS_ALL_ACCESS or PROCESS_VM_OPERATION, PROCESS_VM_WRITE, PROCESS_CREATE_THREAD to obtain handle to the process  
 2) Remote allocate enough memory to fit your shellcode  
