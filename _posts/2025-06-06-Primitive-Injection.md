@@ -117,7 +117,8 @@ LPVOID RemoteAllocation(HANDLE hProc, LPVOID HeapAddr, int sizeofVal)
 }
 ```  
 
-Right now, it is possible to read and allocate remotely; what is left is writing, which unfortunately by the approach so far and using NtCreateThreadEx will not work since it can only allow us to pass one argument to whatever it is we are calling. However in a WriteProcessMemory situation, it would require to pass a memory to write the bytes and the bytes to write, so at least 2 arguments. NtQueueApcThread allows for up to 3 arguments, so I had to find a rop gadget to achieve that in the most optimal way. Both of the public approaches used RtlFillMemory which fits with NtQueueApcThread but it would literally create 1 APC request per byte that you want to write, hence an average shellcode of 270kb would create 270.000 APCs. Crazy amount, which I actually tried against MDE and got an alert for StackBombing.  
+Right now, it is possible to read and allocate remotely; what is left is writing, which unfortunately by the approach so far and using NtCreateThreadEx will not work since it can only allow us to pass one argument to whatever it is we are calling. However in a WriteProcessMemory situation, it would require to pass a memory to write the bytes and the bytes to write, so at least 2 arguments.  NtQueueApcThread allows for up to 3 arguments, so I had to find a rop gadget to achieve that in the most optimal way.  
+Both of the public approaches used RtlFillMemory which fits with NtQueueApcThread but it would literally create 1 APC request per byte that you want to write, hence an average shellcode of 270kb would create 270.000 APCs. Crazy amount, which I actually tried against MDE and got an alert for StackBombing.  
   
 [![](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/stackbombing.png)](https://github.com/trickster0/trickster0.github.io/raw/master/assets/img/favicons/stackbombing.png) 
 
