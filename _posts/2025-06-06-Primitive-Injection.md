@@ -16,8 +16,9 @@ Obviously there are multiple other variations but they all are quite similar. I 
 the remote process with PROCESS_CREATE_THREAD and PROCESS_QUERY_LIMITED_INFORMATION. If you have not understood yet where this is going, basically I wanted to create primitives or remotely allocating,
 reading and writing memory remotely by just creating threads.  
 
-There has been some previous research on this by Austin Hudson (He posted something on ~~twitter~~ X) and [![](x86matthew)](https://x.com/x86matthew/status/1568284466539274240) but I wanted something better.  
-I am sure most of you would think, let's try to find a rop gadget and do this; so did I! However, it was not that easy since in order to avoid PROCESS_VM_OPERATION to patch CFG on processes was included in my challenge. This means that I would have to find a rop gadget that would not be impacted by CFG and that it will be good for the job. Also I wanted to limit my rop gadgets to ntdll for personal reasons.  
+There has been some previous research on this by Austin Hudson (He posted something on ~~twitter~~ X) and [x86matthew](https://www.x86matthew.com/view_post?id=read_write_proc_memory) but I wanted something better.  
+I am sure most of you would think, let's try to find a rop gadget and do this; so did I! However, it was not that easy since in order to avoid PROCESS_VM_OPERATION to patch CFG on processes was included in my challenge.  
+This means that I would have to find a rop gadget that would not be impacted by CFG and that it will be good for the job. Also I wanted to limit my rop gadgets to ntdll for personal reasons.  
 Remote allocation is easy enough if you do not care about its permissions in memory as long as it is writable; just open the remote process with PROCESS_QUERY_LIMITED_INFORMATION and PROCESS_CREATE_THREAD, and create a new thread by passing the malloc function with the size you want the allocation to have.  
 
 Malloc Definition:  
@@ -33,7 +34,8 @@ NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProc, malloc, (PVOID)sizeof
 ```  
 NtCreateThreadEx or CreateRemoteThread can take a function to call as an argument and then pass it one argument to that function, which should suffice for this.  
   
-If you are not aware, malloc function internally will automatically pick a place in memory according to the process' heap base address. Until this point everything is moving in the right direction, but there is a problem that needs to be tackled. How do I find the address that the allocation happened? Thankfully there is an API called GetExitCodeThread that allows to receive the EAX register, which means the return value from the thread, which in this case provides the memory allocation. HOWEVER, it only returns EAX, 4 bytes, but this is a technique for x64 bit Windows that requires to have 6 bytes instead (since heap alloc is in user mode).  
+If you are not aware, malloc function internally will automatically pick a place in memory according to the process' heap base address. Until this point everything is moving in the right direction, but there is a problem that needs to be tackled. How do I find the address that the allocation happened?  
+Thankfully there is an API called GetExitCodeThread that allows to receive the EAX register, which means the return value from the thread, which in this case provides the memory allocation. HOWEVER, it only returns EAX, 4 bytes, but this is a technique for x64 bit Windows that requires to have 6 bytes instead (since heap alloc is in user mode).  
   
 GetExitCodeThread Definition:    
 ```
@@ -93,7 +95,7 @@ The wrapper performs now pretty similarly to ReadProcessMemory, it takes the han
 Turns out there is a workaround and this is the reason PROCESS_QUERY_LIMITED_INFORMATION is required (or does it?).
 By calling NtQueryInformationProcess and asking for ProcessBasicInformation, it is possible to receive the remote process' PEB address, which also contains the process base heap address.  
 Since malloc allocates in process' base heap, my allocation should be based on that base heap, hence since I could obtain the last 4 bytes of the allocation address, I could perform an AND mask operation between them.  
-Steps for obtaining the remotely allocated address:
+Steps for obtaining the remotely allocated address:  
 1) Call NtQueryInformationProcess with ProcessBasicInformation to obtain the PEB address  
 2) Calling the Read primitive on the previously obtained PEB address + 0x30 offset, and reading 8 bytes to get the heap base address off the GetExitCodeThread  
 3) Perform the AND mask operation to calculate the actual allocation address:  
@@ -199,7 +201,7 @@ The Write primitive wrapper takes as a first argument the handle of the remote p
   
 
 ## Achievements  
-Right now it is possible to read, write and allocate in a remote process with just PROCESS_CREATE_THREAD, PROCESS_QUERY_LIMITED_INFORMATION without requiring to patch CFG. It is really easy to perform an injection which I am not gonna go through here but in the proof of concept code on my [![](github link)](https://github.com/trickster0/PrimitiveInjection), you will find a BOF example. I will be cheating there a little bit by using PROCESS_VM_OPERATION to patch CFG in the remote process in order to call NtContinue, since Foliage's method of calling APIs in the remote process is very convenient and also write primitive solves the problem with passing more than four arguments with the CONTEXTS, like you will notice in my POC. FYI I leave this for the reader; it is possible to perform a very OPSEC injection with limited IOCs with just PROCESS_CREATE_THREAD permissions.  
+Right now it is possible to read, write and allocate in a remote process with just PROCESS_CREATE_THREAD, PROCESS_QUERY_LIMITED_INFORMATION without requiring to patch CFG. It is really easy to perform an injection which I am not gonna go through here but in the proof of concept code on my [github link](https://github.com/trickster0/PrimitiveInjection), you will find a BOF example. I will be cheating there a little bit by using PROCESS_VM_OPERATION to patch CFG in the remote process in order to call NtContinue, since Foliage's method of calling APIs in the remote process is very convenient and also write primitive solves the problem with passing more than four arguments with the CONTEXTS, like you will notice in my POC. FYI I leave this for the reader; it is possible to perform a very OPSEC injection with limited IOCs with just PROCESS_CREATE_THREAD permissions.  
   
 Aside from the above, it is worth mentioning that we completely remove the telemetry of ETWTI for ReadProcessMemory and WriteProcessMemory. Also we create threads and call APCs with addresses that are fully backed in memory to files on disk.  
 
